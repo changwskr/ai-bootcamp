@@ -323,3 +323,117 @@ llm = ChatOpenAI(
 ---
 
 **참고**: 이 구현은 LangGraph의 공식 문서와 예제를 기반으로 하며, OpenAI API 할당량 문제를 해결하기 위한 더미 모드를 포함합니다. 
+
+
+
+
+===============================================================
+┌────────────────────────────────────────────────────────────────┐
+│ [시작] init_state:                                            │
+│   messages = ["오늘 구내식당 점심 뭐야? 그리고 내 남은 일정도 알려줘."] │
+│   next = None                                                 │
+└───────────────┬────────────────────────────────────────────────┘
+                │ invoke(graph)
+                v
+        ┌─────────────────────────┐
+        │        SUPERVISOR       │
+        │  (supervisor_node)      │
+        └───────────┬─────────────┘
+                    │ 판정 로직
+                    │
+     ┌──────────────┼───────────────────────────────────────────────────────────────┐
+     │              │                                                               │
+     │   [A] 초기 메시지에 "식당/점심/밥/메뉴" AND "일정/스케줄" 둘 다 포함?          │
+     │              │                                                               │
+     │              └────── Yes ──────────► goto = cafeteria                       │
+     │                                      (next = "cafeteria")                    │
+     │                                                                              │
+     │   [B] 최근 메시지에 "식당/점심/밥/메뉴"만 포함?                                │
+     │              └────── Yes ──────────► goto = cafeteria                       │
+     │                                      (next = "cafeteria")                    │
+     │                                                                              │
+     │   [C] 최근 메시지에 "일정/스케줄"만 포함?                                     │
+     │              └────── Yes ──────────► goto = schedule                        │
+     │                                      (next = "schedule")                     │
+     │                                                                              │
+     │   [D] 최근 메시지 name == "cafeteria"?  (식당 응답을 막 받았다)                │
+     │              └────── Yes ──────────► goto = schedule                        │
+     │                                      (next = "schedule")                     │
+     │                                                                              │
+     │   [E] 최근 메시지 name == "schedule"?  (일정 응답을 막 받았다)                 │
+     │              └────── Yes ──────────► goto = END (FINISH)                    │
+     │                                      (next = "FINISH")                       │
+     │                                                                              │
+     │   [F] 그 외                                                                  │
+     │              └──────────────────────► goto = END (FINISH)                    │
+     └──────────────────────────────────────────────────────────────────────────────┘
+
+(1) SUPERVISOR ──(goto=cafeteria)──────────────────────────────────────────────►
+
+               ┌─────────────────────────┐
+               │        CAFETERIA        │
+               │   (cafeteria_node)      │
+               └───────────┬─────────────┘
+                           │ 로직
+                           │
+                           │  - 메시지에 요일이 명시되면: 해당 요일 메뉴 조회
+                           │  - 아니면: "오늘은 월요일이고, 월요일 식단은 ..." (샘플 응답)
+                           v
+                  [messages에 추가]
+                  HumanMessage(
+                    content="(식단 안내 텍스트 ...)",
+                    name="cafeteria"
+                  )
+                           │
+                           └───► goto = supervisor  (next = "supervisor")
+
+(2) SUPERVISOR (재호출) ──(최근 메시지 name == 'cafeteria')────────────────────►
+                           goto = schedule   (next="schedule")
+
+               ┌─────────────────────────┐
+               │         SCHEDULE        │
+               │    (schedule_node)      │
+               └───────────┬─────────────┘
+                           │ 로직
+                           │
+                           │  - "이름/누구"를 물은 상태면: "사용자 이름 알려주세요"
+                           │  - 그 외: get_schedule("사용자")로 더미 일정 안내
+                           v
+                  [messages에 추가]
+                  HumanMessage(
+                    content="(일정 안내 텍스트 ...)",
+                    name="schedule"
+                  )
+                           │
+                           └───► goto = supervisor  (next = "supervisor")
+
+(3) SUPERVISOR (재호출) ──(최근 메시지 name == 'schedule')─────────────────────►
+                           goto = END (FINISH)   (next="FINISH")
+
+┌────────────────────────────────────────────────────────────────┐
+│ [종료] END                                                     │
+│  messages = [..., "식당 응답", "일정 응답"] (대화 전 과정 로그) │
+└────────────────────────────────────────────────────────────────┘
+
+
+보조 시나리오 요약
+
+식당만 묻는 경우
+
+SUPERVISOR → cafeteria
+
+cafeteria 답변 → SUPERVISOR
+
+SUPERVISOR: 최근 name == cafeteria → schedule (일정도 해달라는 뜻으로 해석하지 않도록 규칙을 바꾸고 싶다면 여기 조정)
+
+(원 코드 기준) schedule 답변 → SUPERVISOR → FINISH
+
+일정만 묻는 경우
+
+SUPERVISOR → schedule
+
+schedule 답변 → SUPERVISOR → FINISH
+
+기타/판단 불가
+
+SUPERVISOR → 바로 FINISH

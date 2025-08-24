@@ -40,10 +40,17 @@ def getenv_required(key: str) -> str:
     return val
 
 # OpenAI API 키 검증 (더미 모드에서는 선택사항)
+print("[DEBUG] 환경변수 확인 시작...")
+print(f"[DEBUG] os.environ.keys(): {list(os.environ.keys())}")
+print(f"[DEBUG] OPENAI_API_KEY in os.environ: {'OPENAI_API_KEY' in os.environ}")
+
 openai_api_key = os.getenv("OPENAI_API_KEY")
+print(f"[DEBUG] os.getenv('OPENAI_API_KEY') 직접 호출 결과: {openai_api_key}")
+
 if not openai_api_key:
     print("[ENV WARNING] OPENAI_API_KEY 가(이) 설정되지 않았습니다. 더미 모드로 실행합니다.")
     print("[OpenAI Env] 더미 모드 - API 키 불필요")
+    print(f"[DEBUG] OPENAI_API_KEY 값: {openai_api_key}")
     USE_DUMMY_LLM = True  # API 키가 없으면 강제로 더미 모드
 else:
     print("[OpenAI Env]")
@@ -57,6 +64,7 @@ def test_openai_connection():
     """OpenAI API 연결을 테스트합니다."""
     if not os.getenv("OPENAI_API_KEY"):
         print("[OpenAI API Test] 더미 모드 - 연결 테스트 건너뜀")
+        print(f"[DEBUG] test_openai_connection에서 OPENAI_API_KEY 값: {os.getenv('OPENAI_API_KEY')}")
         return
         
     try:
