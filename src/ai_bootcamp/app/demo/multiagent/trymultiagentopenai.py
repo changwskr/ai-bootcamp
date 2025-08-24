@@ -39,13 +39,15 @@ def getenv_required(key: str) -> str:
         sys.exit(1)
     return val
 
-# OpenAI API 키 검증
-if not os.getenv("OPENAI_API_KEY"):
-    print("[ENV ERROR] OPENAI_API_KEY 가(이) 설정되지 않았습니다.", file=sys.stderr)
-    sys.exit(1)
-
-print("[OpenAI Env]")
-print("  OPENAI_API_KEY =", "*" * 10 + os.getenv("OPENAI_API_KEY")[-4:])
+# OpenAI API 키 검증 (더미 모드에서는 선택사항)
+openai_api_key = os.getenv("OPENAI_API_KEY")
+if not openai_api_key:
+    print("[ENV WARNING] OPENAI_API_KEY 가(이) 설정되지 않았습니다. 더미 모드로 실행합니다.")
+    print("[OpenAI Env] 더미 모드 - API 키 불필요")
+    USE_DUMMY_LLM = True  # API 키가 없으면 강제로 더미 모드
+else:
+    print("[OpenAI Env]")
+    print("  OPENAI_API_KEY =", "*" * 10 + openai_api_key[-4:])
 
 
 # -----------------------------
@@ -53,6 +55,10 @@ print("  OPENAI_API_KEY =", "*" * 10 + os.getenv("OPENAI_API_KEY")[-4:])
 # -----------------------------
 def test_openai_connection():
     """OpenAI API 연결을 테스트합니다."""
+    if not os.getenv("OPENAI_API_KEY"):
+        print("[OpenAI API Test] 더미 모드 - 연결 테스트 건너뜀")
+        return
+        
     try:
         url = "https://api.openai.com/v1/models"
         headers = {"Authorization": f"Bearer {os.getenv('OPENAI_API_KEY')}"}
