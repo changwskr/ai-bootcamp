@@ -1,0 +1,4 @@
+
+## 환경 변수 설정:
+MLFLOW_TRACKING_URI: http://localhost:5000
+API_KEY: 설정됨

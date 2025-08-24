@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Bootcamp - Demo Prac01</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .demo-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .demo-title {
+            color: #495057;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .api-test {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .api-response {
+            background: #f8f9fa;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🎯 AI Bootcamp - Demo Practice 01</h1>
+        
+        <div class="demo-section">
+            <h2>📋 실습 개요</h2>
+            <p>이 페이지는 AI Bootcamp의 첫 번째 실습을 위한 데모 페이지입니다.</p>
+            <ul>
+                <li>FastAPI 기반 웹 애플리케이션 구조 이해</li>
+                <li>레이어드 아키텍처 패턴 학습</li>
+                <li>RESTful API 설계 및 구현</li>
+                <li>로깅 시스템 활용</li>
+            </ul>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔧 API 테스트</h2>
+            <div class="api-test">
+                <h3>Hello API 테스트</h3>
+                <p>기본적인 Hello API를 테스트해보세요.</p>
+                <button class="btn" onclick="testHelloAPI()">Hello API 호출</button>
+                <div id="hello-response" class="api-response" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>📊 시스템 정보</h2>
+            <div class="api-test">
+                <h3>시스템 상태 확인</h3>
+                <button class="btn" onclick="checkHealth()">Health Check</button>
+                <button class="btn" onclick="getConfig()">Config 조회</button>
+                <div id="system-response" class="api-response" style="display: none;"></div>
+            </div>
+        </div>
+
+        <div class="demo-section">
+            <h2>🔗 네비게이션</h2>
+            <a href="/" class="btn">🏠 홈으로</a>
+            <a href="/login" class="btn">🔐 로그인</a>
+            <a href="/demo/prac02" class="btn">🖼️ Image Demo</a>
+            <a href="/demo/prac02/langchain" class="btn">🔗 LangChain Demo</a>
+            <a href="/dashboard" class="btn">📊 대시보드</a>
+        </div>
+    </div>
+
+    <script>
+        async function testHelloAPI() {
+            const responseDiv = document.getElementById('hello-response');
+            responseDiv.style.display = 'block';
+            responseDiv.textContent = 'API 호출 중...';
+            
+            try {
+                const response = await fetch('/demo/prac01/hello');
+                const data = await response.json();
+                
+                responseDiv.textContent = `✅ 성공!\n\n응답 데이터:\n${JSON.stringify(data, null, 2)}`;
+                responseDiv.style.background = '#d4edda';
+                responseDiv.style.borderColor = '#c3e6cb';
+            } catch (error) {
+                responseDiv.textContent = `❌ 오류 발생!\n\n${error.message}`;
+                responseDiv.style.background = '#f8d7da';
+                responseDiv.style.borderColor = '#f5c6cb';
+            }
+        }
+
+        async function checkHealth() {
+            const responseDiv = document.getElementById('system-response');
+            responseDiv.style.display = 'block';
+            responseDiv.textContent = 'Health Check 중...';
+            
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                responseDiv.textContent = `✅ Health Check 성공!\n\n시스템 상태:\n${JSON.stringify(data, null, 2)}`;
+                responseDiv.style.background = '#d4edda';
+                responseDiv.style.borderColor = '#c3e6cb';
+            } catch (error) {
+                responseDiv.textContent = `❌ Health Check 실패!\n\n${error.message}`;
+                responseDiv.style.background = '#f8d7da';
+                responseDiv.style.borderColor = '#f5c6cb';
+            }
+        }
+
+        async function getConfig() {
+            const responseDiv = document.getElementById('system-response');
+            responseDiv.style.display = 'block';
+            responseDiv.textContent = 'Config 조회 중...';
+            
+            try {
+                const response = await fetch('/config');
+                const data = await response.json();
+                
+                responseDiv.textContent = `✅ Config 조회 성공!\n\n설정 정보:\n${JSON.stringify(data, null, 2)}`;
+                responseDiv.style.background = '#d4edda';
+                responseDiv.style.borderColor = '#c3e6cb';
+            } catch (error) {
+                responseDiv.textContent = `❌ Config 조회 실패!\n\n${error.message}`;
+                responseDiv.style.background = '#f8d7da';
+                responseDiv.style.borderColor = '#f5c6cb';
+            }
+        }
+    </script>
+</body>
+</html> 

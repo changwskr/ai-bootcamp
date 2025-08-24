@@ -1,0 +1,17 @@
+# Baseline model configuration
+model:
+  name: "baseline"
+  type: "linear"
+  input_size: 768
+  hidden_size: 256
+  output_size: 2
+  dropout: 0.1
+
+optimizer:
+  name: "adam"
+  lr: 3e-4
+  weight_decay: 1e-4
+
+scheduler:
+  name: "cosine"
+  warmup_steps: 100 

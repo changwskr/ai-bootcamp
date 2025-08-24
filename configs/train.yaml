@@ -1,0 +1,9 @@
+defaults:
+  - model: baseline
+
+seed: 42
+data:
+  path: data/processed/train.csv
+trainer:
+  epochs: 5
+  lr: 3e-4

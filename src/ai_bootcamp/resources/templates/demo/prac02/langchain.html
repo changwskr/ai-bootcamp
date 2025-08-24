@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LangChain OpenAI Demo</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .demo-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .demo-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .demo-section h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .input-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        .btn:hover {
+            background: #2980b9;
+        }
+        
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 50px;
+        }
+        
+        .result-box h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        
+        .conversation {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+        }
+        
+        .message.user {
+            background: #3498db;
+            color: white;
+            margin-left: 20%;
+        }
+        
+        .message.ai {
+            background: #ecf0f1;
+            color: #2c3e50;
+            margin-right: 20%;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+        }
+        
+        .alert-info {
+            color: #31708f;
+            background-color: #d9edf7;
+            border-color: #bce8f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 LangChain OpenAI Demo</h1>
+            <p>Azure OpenAI에서 OpenAI API로 변환된 LangChain 채팅 데모</p>
+        </header>
+        
+        <nav>
+            <a href="/" class="nav-link">🏠 홈</a>
+            <a href="/demo/prac01" class="nav-link">💬 Chat Demo</a>
+            <a href="/demo/prac02" class="nav-link">🖼️ Image Demo</a>
+            <a href="/demo/prac02/langchain" class="nav-link active">🔗 LangChain Demo</a>
+        </nav>
+        
+        <div class="demo-container">
+            <!-- Mock 모드 상태 표시 -->
+            <div class="demo-section" id="mock-status" style="display: none;">
+                <h2>🔧 Mock 모드</h2>
+                <div class="alert alert-info">
+                    <strong>Mock 모드가 활성화되었습니다.</strong><br>
+                    API 할당량 초과로 인해 실제 OpenAI API 대신 Mock 응답을 사용합니다.
+                </div>
+            </div>
+            
+            <!-- 번역 섹션 -->
+            <div class="demo-section">
+                <h2>🌐 텍스트 번역</h2>
+                <div class="input-group">
+                    <label for="translateText">번역할 텍스트 (영어):</label>
+                    <textarea id="translateText" placeholder="번역할 영어 텍스트를 입력하세요...">I love programming.</textarea>
+                </div>
+                <div class="input-group">
+                    <label for="targetLanguage">목표 언어:</label>
+                    <select id="targetLanguage">
+                        <option value="Korean">한국어</option>
+                        <option value="Japanese">일본어</option>
+                        <option value="Chinese">중국어</option>
+                        <option value="Spanish">스페인어</option>
+                        <option value="French">프랑스어</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="translateText()">번역하기</button>
+                <button class="btn btn-secondary" onclick="clearTranslation()">지우기</button>
+                
+                <div class="result-box" id="translationResult">
+                    <h4>번역 결과</h4>
+                    <div id="translationContent">번역 결과가 여기에 표시됩니다.</div>
+                </div>
+            </div>
+            
+            <!-- 대화 섹션 -->
+            <div class="demo-section">
+                <h2>💬 대화형 채팅</h2>
+                <div class="input-group">
+                    <label for="chatMessage">메시지:</label>
+                    <input type="text" id="chatMessage" placeholder="메시지를 입력하세요..." onkeypress="handleKeyPress(event)">
+                </div>
+                <button class="btn" onclick="sendMessage()">전송</button>
+                <button class="btn btn-secondary" onclick="clearChat()">대화 지우기</button>
+                
+                <div class="conversation" id="chatConversation">
+                    <div class="message ai">
+                        안녕하세요! LangChain OpenAI 데모에 오신 것을 환영합니다. 무엇을 도와드릴까요?
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 로딩 인디케이터 -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>AI가 응답을 생성하고 있습니다...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let conversationHistory = [
+            { role: 'system', content: 'You are a helpful programming assistant. Answer in Korean.' },
+            { role: 'ai', content: '안녕하세요! LangChain OpenAI 데모에 오신 것을 환영합니다. 무엇을 도와드릴까요?' }
+        ];
+        
+        // Mock 모드 상태 확인
+        async function checkMockStatus() {
+            try {
+                const response = await fetch('/api/langchain/health');
+                const status = await response.json();
+                
+                if (status.mock_mode) {
+                    document.getElementById('mock-status').style.display = 'block';
+                }
+            } catch (error) {
+                console.log('Mock 상태 확인 실패:', error);
+            }
+        }
+        
+        // 페이지 로드 시 Mock 상태 확인
+        document.addEventListener('DOMContentLoaded', checkMockStatus);
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+        
+        async function translateText() {
+            const text = document.getElementById('translateText').value.trim();
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            
+            if (!text) {
+                alert('번역할 텍스트를 입력해주세요.');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/langchain/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        target_language: targetLanguage
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('translationContent').innerHTML = `
+                        <strong>원문:</strong> ${text}<br>
+                        <strong>번역:</strong> ${result.translation}
+                    `;
+                } else {
+                    document.getElementById('translationContent').innerHTML = `❌ 오류: ${result.error}`;
+                }
+            } catch (error) {
+                document.getElementById('translationContent').innerHTML = `❌ 네트워크 오류: ${error.message}`;
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function clearTranslation() {
+            document.getElementById('translateText').value = '';
+            document.getElementById('translationContent').innerHTML = '번역 결과가 여기에 표시됩니다.';
+        }
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('chatMessage');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                alert('메시지를 입력해주세요.');
+                return;
+            }
+            
+            // 사용자 메시지 추가
+            addMessageToChat('user', message);
+            conversationHistory.push({ role: 'human', content: message });
+            
+            messageInput.value = '';
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/langchain/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: conversationHistory
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const aiResponse = result.response;
+                    addMessageToChat('ai', aiResponse);
+                    conversationHistory.push({ role: 'ai', content: aiResponse });
+                } else {
+                    addMessageToChat('ai', `❌ 오류: ${result.error}`);
+                }
+            } catch (error) {
+                addMessageToChat('ai', `❌ 네트워크 오류: ${error.message}`);
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function addMessageToChat(role, content) {
+            const conversation = document.getElementById('chatConversation');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
+            messageDiv.textContent = content;
+            conversation.appendChild(messageDiv);
+            conversation.scrollTop = conversation.scrollHeight;
+        }
+        
+        function clearChat() {
+            const conversation = document.getElementById('chatConversation');
+            conversation.innerHTML = `
+                <div class="message ai">
+                    안녕하세요! LangChain OpenAI 데모에 오신 것을 환영합니다. 무엇을 도와드릴까요?
+                </div>
+            `;
+            conversationHistory = [
+                { role: 'system', content: 'You are a helpful programming assistant. Answer in Korean.' },
+                { role: 'ai', content: '안녕하세요! LangChain OpenAI 데모에 오신 것을 환영합니다. 무엇을 도와드릴까요?' }
+            ];
+        }
+    </script>
+</body>
+</html> 

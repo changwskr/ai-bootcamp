@@ -1,0 +1,17 @@
+# API 서버 시작
+.\run.ps1 api
+
+# 의존성 설치
+.\run.ps1 setup
+
+# 테스트 실행
+.\run.ps1 test
+
+# 코드 검사
+.\run.ps1 lint
+
+# 코드 포맷팅
+.\run.ps1 fmt
+
+# 도움말
+.\run.ps1 help

@@ -1,0 +1,5 @@
+현재 실행 중인 서비스:
+🌐 FastAPI 서버: http://localhost:8000
+📚 API 문서: http://localhost:8000/docs
+🔍 Health Check: http://localhost:8000/health
+⚙️ Config: http://localhost:8000/config

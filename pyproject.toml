@@ -1,0 +1,9 @@
+[project]
+name = "ai-bootcamp"
+version = "0.1.0"
+description = "AI Bootcamp reference project"
+requires-python = ">=3.10"
+dependencies = ["fastapi", "uvicorn", "hydra-core", "pydantic>=2", "python-dotenv", "mlflow"]
+
+[project.optional-dependencies]
+dev = ["ruff", "black", "isort", "pytest", "pytest-cov", "mypy", "pre-commit", "jupytext", "ipykernel"]
