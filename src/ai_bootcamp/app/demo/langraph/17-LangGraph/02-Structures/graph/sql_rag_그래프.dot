@@ -1,0 +1,21 @@
+// SQL RAG 그래프 Visualization
+digraph {
+	rankdir=LR
+	node [fillcolor=lightblue shape=box style=filled]
+	edge [color=gray]
+	__start__ [label=__start__]
+	"질문" [label="질문"]
+	rewrite_query [label=rewrite_query]
+	rewrite_question [label=rewrite_question]
+	"GPT 요청" [label="GPT 요청"]
+	GPT_relevance_check [label=GPT_relevance_check]
+	"결과 종합" [label="결과 종합"]
+	get_table_info [label=get_table_info]
+	generate_sql_query [label=generate_sql_query]
+	execute_sql_query [label=execute_sql_query]
+	validate_sql_query [label=validate_sql_query]
+	get_table_info -> generate_sql_query
+	generate_sql_query -> execute_sql_query
+	execute_sql_query -> validate_sql_query
+	validate_sql_query -> sql_decision
+}

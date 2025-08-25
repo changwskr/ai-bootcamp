@@ -1,9 +1,10 @@
-.PHONY: setup dev test lint fmt nb run api clean train chat-demo chat-image trymultiagentopenai trymultiagentchat basicexam
+.PHONY: setup dev test lint fmt nb run api clean train chat-demo chat-image trymultiagentopenai trymultiagentchat basicexam rag-basic-pdf langgraph-building-graph
 
 setup:
 	set PYTHONPATH=src && .venv\Scripts\python.exe -m pip install fastapi uvicorn python-dotenv pydantic hydra-core mlflow python-multipart
 	set PYTHONPATH=src && .venv\Scripts\python.exe -m pip install openai pillow requests
 	set PYTHONPATH=src && .venv\Scripts\python.exe -m pip install langchain-openai langchain-core langgraph
+	set PYTHONPATH=src && .venv\Scripts\python.exe -m pip install langchain-text-splitters langchain-community faiss-cpu pymupdf sentence-transformers langchain-huggingface torch langchain-teddynote graphviz pydot matplotlib
 	set PYTHONPATH=src && .venv\Scripts\python.exe -m pip install ruff black isort pytest pytest-cov mypy pre-commit jupytext ipykernel
 	pre-commit install
 
@@ -70,6 +71,18 @@ trymultiagentopenai:
 trymultiagentchat:
 	@echo Loading .env file and running trymultiagentchat...
 	@call run_with_env_azure.bat
+
+rag-basic-pdf:
+	@echo Running RAG Basic PDF demo...
+	set PYTHONPATH=src && .venv\Scripts\python.exe src\ai_bootcamp\app\demo\rag\12-RAG\rag_basic_pdf.py
+
+rag-basic-pdf-local:
+	@echo Running RAG Basic PDF demo (Local Model)...
+	set PYTHONPATH=src && .venv\Scripts\python.exe src\ai_bootcamp\app\demo\rag\12-RAG\rag_basic_pdf_local.py
+
+langgraph-building-graph:
+	@echo Running LangGraph Building Graph demo...
+	set PYTHONPATH=src && .venv\Scripts\python.exe src\ai_bootcamp\app\demo\langraph\17-LangGraph\02-Structures\01-langgraph-building-graph.py
 
 clean:
 	if exist .pytest_cache rmdir /s /q .pytest_cache
