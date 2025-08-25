@@ -597,13 +597,39 @@ def create_graph_png(app, graph_name="Graph", filename=None):
         entry_point = app.entry_point if hasattr(app, "entry_point") else None
 
         # matplotlib을 사용한 그래프 시각화
-        # 한글 폰트 설정
-        plt.rcParams["font.family"] = [
-            "DejaVu Sans",
-            "Arial Unicode MS",
-            "Malgun Gothic",
-            "SimHei",
+        # 한글 폰트 설정 - 시스템에서 사용 가능한 폰트만 사용
+        import matplotlib.font_manager as fm
+
+        # 시스템에서 사용 가능한 폰트 확인
+        available_fonts = [f.name for f in fm.fontManager.ttflist]
+
+        # 한글 폰트 우선순위 설정
+        korean_fonts = [
+            "Malgun Gothic",  # Windows 기본 한글 폰트
+            "NanumGothic",  # 나눔고딕
+            "NanumBarunGothic",  # 나눔바른고딕
+            "Dotum",  # 돋움
+            "Gulim",  # 굴림
+            "Batang",  # 바탕
+            "SimHei",  # 중국어 폰트 (한글 지원)
+            "Microsoft YaHei",  # 마이크로소프트 야헤이
         ]
+
+        # 사용 가능한 한글 폰트 찾기
+        selected_font = None
+        for font in korean_fonts:
+            if font in available_fonts:
+                selected_font = font
+                break
+
+        if selected_font:
+            plt.rcParams["font.family"] = [selected_font, "DejaVu Sans", "Arial"]
+            print(f"한글 폰트 '{selected_font}'를 사용합니다.")
+        else:
+            # 한글 폰트가 없으면 기본 폰트 사용
+            plt.rcParams["font.family"] = ["DejaVu Sans", "Arial"]
+            print("한글 폰트를 찾을 수 없어 기본 폰트를 사용합니다.")
+
         plt.rcParams["axes.unicode_minus"] = False
 
         fig, ax = plt.subplots(figsize=(12, 8))
